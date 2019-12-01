@@ -170,7 +170,7 @@ impl balances::Trait for Runtime {
 	/// The type for recording an account's balance.
 	type Balance = u128;
 	/// What to do if an account's free balance gets zeroed.
-	type OnFreeBalanceZero = ();
+	type OnFreeBalanceZero = (Contracts);
 	/// What to do if a new account is created.
 	type OnNewAccount = Indices;
 	/// The uniquitous event type.
@@ -195,6 +195,19 @@ impl mymodule::Trait for Runtime {
     type Event = Event;
 }
 
+impl contracts::Trait for Runtime {
+    type Currency = Balances;
+    type Call = Call;
+    type Event = Event;
+    type DetermineContractAddress = contracts::SimpleAddressDeterminator<Runtime>;
+    type ComputeDispatchFee = contracts::DefaultDispatchFeeComputor<Runtime>;
+    type TrieIdGenerator = contracts::TrieIdFromParentCounter<Runtime>;
+	type GasPayment = ();
+	type Gas = u64;
+
+ 
+}
+
 construct_runtime!(
 	pub enum Runtime with Log(InternalLog: DigestItem<Hash, AuthorityId, AuthoritySignature>) where
 		Block = Block,
@@ -208,6 +221,7 @@ construct_runtime!(
 		Indices: indices,
 		Balances: balances,
 		Sudo: sudo,
+		Contracts: contracts::{Module, Call, Storage, Config<T>, Event<T>},
 		// Used for the module template in `./template.rs`
 		TemplateModule: template::{Module, Call, Storage, Event<T>},
 		MyModule: mymodule::{Module, Call, Storage, Event<T>},
